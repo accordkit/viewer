@@ -1,0 +1,218 @@
+:root {
+  color-scheme: light dark;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0f172a 0%, #111827 40%, #020617 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.5rem;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+.panel {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(18px);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3);
+}
+
+.panel h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.panel-header {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-body {
+  padding: 1.25rem 1.5rem;
+}
+
+.dropzone {
+  border: 2px dashed rgba(94, 234, 212, 0.5);
+  border-radius: 14px;
+  padding: 2rem;
+  text-align: center;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  background: rgba(15, 118, 110, 0.05);
+  color: #5eead4;
+}
+
+.dropzone.dragging {
+  border-color: rgba(129, 140, 248, 0.9);
+  background: rgba(79, 70, 229, 0.18);
+  color: #c7d2fe;
+}
+
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.event-row {
+  padding: 1.1rem 1.2rem;
+  border-radius: 12px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.event-row > div:last-child {
+  min-width: 0;
+}
+
+.event-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.35);
+}
+
+.badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.badge[data-type='message'] {
+  background: rgba(129, 140, 248, 0.14);
+  color: #a5b4fc;
+}
+
+.badge[data-type='tool_call'] {
+  background: rgba(20, 184, 166, 0.14);
+  color: #99f6e4;
+}
+
+.badge[data-type='tool_result'] {
+  background: rgba(251, 191, 36, 0.14);
+  color: #fcd34d;
+}
+
+.badge[data-type='usage'] {
+  background: rgba(14, 165, 233, 0.14);
+  color: #bae6fd;
+}
+
+.badge[data-type='span'] {
+  background: rgba(236, 72, 153, 0.14);
+  color: #f9a8d4;
+}
+
+.summary-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.summary-card {
+  border-radius: 12px;
+  padding: 1rem 1rem;
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.12), rgba(94, 234, 212, 0.12));
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.summary-card h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.summary-card strong {
+  display: block;
+  font-size: 1.9rem;
+  margin-top: 0.4rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.filter-button {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  background: rgba(30, 41, 59, 0.8);
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-button.active {
+  border-color: rgba(94, 234, 212, 0.8);
+  color: #5eead4;
+  box-shadow: 0 0 0 2px rgba(94, 234, 212, 0.1);
+}
+
+.error-banner {
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  color: #fecaca;
+  font-size: 0.9rem;
+}
+
+.top-banner {
+  background: linear-gradient(95deg, rgba(79, 70, 229, 0.45), rgba(14, 165, 233, 0.35));
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  color: #f8fafc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (max-width: 1100px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+}
