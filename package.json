@@ -13,6 +13,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.node.json && vite build",
+    "clean": "rimraf dist",
     "preview": "vite preview",
     "test": "vitest run --reporter=dot",
     "test:watch": "vitest",

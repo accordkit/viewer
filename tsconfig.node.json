@@ -3,9 +3,13 @@
   "compilerOptions": {
     "composite": true,
     "module": "ESNext",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2021"
+    ],
     "moduleResolution": "Bundler",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "vite.config.ts"
+  ]
 }

@@ -13,7 +13,9 @@ describe("App", () => {
       screen.getByRole("button", { name: /load sample trace/i })
     );
 
-    expect(await screen.findByText(/AccordKit/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Generate a limerick about AccordKit/i)
+    ).toBeInTheDocument();
     expect(screen.getAllByText(/message/i)[0]).toBeInTheDocument();
     expect(screen.getByText(/sample-trace\.jsonl/i)).toBeInTheDocument();
   });
