@@ -1,5 +1,13 @@
 # @accordkit/viewer
 
+[![Part of AccordKit](https://img.shields.io/badge/AccordKit-ecosystem-00cc88?style=flat-square)](https://github.com/accordkit)
+
+> **Part of the [AccordKit](https://github.com/accordkit) ecosystem** —  
+> an open, AI-agnostic tracing SDK for LLM-powered and ChatGPT-interoperable applications.  
+> AccordKit gives developers local-first observability: **no vendor lock-in, no opaque dashboards**, just clean event streams and tools that work anywhere.
+
+[🌍 Positioning Map →](https://github.com/accordkit/docs/blob/main/assets/accordkit_positioning_map.png)
+
 Interactive AccordKit trace viewer built with React + Vite. Drop a `.jsonl`
 trace (newline-delimited AccordKit events) to explore sessions, timeline
 metadata, and provider details. Designed with TraceTalk plugin slots so future
