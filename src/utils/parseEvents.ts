@@ -1,4 +1,4 @@
-import type { TracerEvent } from "@accordkit/core";
+import type { TracerEvent } from "@accordkit/tracer";
 
 export interface ParseError {
   line: number;

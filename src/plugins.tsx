@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-import type { TracerEvent } from "@accordkit/core";
+import type { TracerEvent } from "@accordkit/tracer";
 import type { ReactNode } from "react";
 
 interface PluginSlots {

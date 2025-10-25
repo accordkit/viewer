@@ -1,6 +1,5 @@
+import type { TracerEvent } from "@accordkit/tracer";
 import type { CSSProperties } from "react";
-
-import type { TracerEvent } from "@accordkit/core";
 
 interface EventListProps {
   events: TracerEvent[];

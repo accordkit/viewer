@@ -8,7 +8,7 @@ import { FilterBar } from "./components/FilterBar";
 import { PluginProvider, RightPanelSlot, TopBannerSlot } from "./plugins";
 import { parseJsonLines } from "./utils/parseEvents";
 
-import type { TracerEvent } from "@accordkit/core";
+import type { TracerEvent } from "@accordkit/tracer";
 
 type EventFilter = "all" | TracerEvent["type"];
 

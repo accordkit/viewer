@@ -2,8 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { parseJsonLines, sortEvents } from "../utils/parseEvents";
 
-import type { TracerEvent } from "@accordkit/core";
-
+import type { TracerEvent } from "@accordkit/tracer";
 
 const sampleEvent: TracerEvent = {
   ts: "2024-01-01T00:00:00.000Z",

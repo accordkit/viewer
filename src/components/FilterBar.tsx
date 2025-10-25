@@ -1,4 +1,4 @@
-import type { TracerEvent } from "@accordkit/core";
+import type { TracerEvent } from "@accordkit/tracer";
 
 const EVENT_TYPES: Array<TracerEvent["type"]> = [
   "message",
