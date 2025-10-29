@@ -13,7 +13,7 @@ export function DropZone({ onFiles }: DropZoneProps) {
       if (!files || files.length === 0) return;
       onFiles(files);
     },
-    [onFiles]
+    [onFiles],
   );
 
   return (

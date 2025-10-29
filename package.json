@@ -1,11 +1,24 @@
 {
   "name": "@accordkit/viewer",
   "version": "0.1.0",
-  "description": "AccordKit trace viewer – React + Vite application for inspecting normalized events.",
+  "description": "A pluggable, type-safe trace viewer for AI tools and LLM observability; visualize spans, messages, and tool calls with React + TypeScript.",
   "repository": {
     "type": "git",
     "url": "https://github.com/accordkit/viewer"
   },
+  "keywords": [
+    "accordkit",
+    "viewer",
+    "observability",
+    "tracing",
+    "telemetry",
+    "ai",
+    "llm",
+    "plugin",
+    "react",
+    "typescript",
+    "span-tree"
+  ],
   "bugs": "https://github.com/accordkit/viewer/issues",
   "homepage": "https://github.com/accordkit/viewer",
   "license": "MIT",

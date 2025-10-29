@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 interface PluginSlots {
   TopBanner?: () => ReactNode;
   RightPanel?: (props: { events: TracerEvent[] }) => ReactNode;
+  EventExtras?: (props: { event: TracerEvent }) => ReactNode;
 }
 
 const PluginContext = createContext<PluginSlots | null>(null);
@@ -95,4 +96,10 @@ export function RightPanelSlot({ events }: { events: TracerEvent[] }) {
       </div>
     </div>
   );
+}
+
+export function EventExtrasSlot({ event }: { event: TracerEvent }) {
+  const value = useContext(PluginContext);
+  if (value?.EventExtras) return <>{value.EventExtras({ event })}</>;
+  return null;
 }

@@ -35,7 +35,7 @@ describe("parseJsonLines", () => {
       {
         ...sampleEvent,
         ts: "2024-01-01T00:00:02.000Z",
-      }
+      },
     )}`;
 
     const result = parseJsonLines(jsonl);
