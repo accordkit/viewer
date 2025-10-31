@@ -70,5 +70,11 @@ export default [
     languageOptions: { globals: { ...globals.browser, ...globals.es2021 } },
     rules: { "@typescript-eslint/no-explicit-any": "off" },
   },
+  {
+    files: ["server/server.js"],
+    languageOptions: {
+      globals: { ...globals.node }
+    }
+  },
   { ignores: ["dist/", "coverage/", "node_modules/", "*.zip"] },
 ];
