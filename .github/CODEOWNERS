@@ -1,1 +1,11 @@
+# AccordKit Viewer
+# React + Vite viewer for live AI trace visualization
+
 * @faranjit
+
+/src/ @faranjit
+/components/ @faranjit
+/hooks/ @faranjit
+/vite.config.ts @faranjit
+/tsconfig.json @faranjit
+/.github/workflows/ @faranjit
