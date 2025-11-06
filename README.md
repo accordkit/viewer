@@ -2,11 +2,9 @@
 
 [![Part of AccordKit](https://img.shields.io/badge/AccordKit-ecosystem-00cc88?style=flat-square)](https://github.com/accordkit)
 
-> **Part of the [AccordKit](https://github.com/accordkit) ecosystem** —  
+> **Part of the [AccordKit](https://github.com/accordkit) ecosystem**   
 > an open, AI-agnostic tracing SDK for LLM-powered and ChatGPT-interoperable applications.  
 > AccordKit gives developers local-first observability: **no vendor lock-in, no opaque dashboards**, just clean event streams and tools that work anywhere.
-
-[🌍 Positioning Map →](https://github.com/accordkit/docs/blob/main/assets/accordkit_positioning_map.png)
 
 The AccordKit Viewer is a lightweight, pluggable trace viewer for AI tool and model observability.
 It visualizes traces, spans, messages, and tool calls in real time, with plugin slots for custom visualizations and metrics.
@@ -145,14 +143,6 @@ The goal: make AI tool tracing human-readable.
 
 ---
 
-## 🗺 Roadmap
-
-- Live tail (SSE/WS)
-- Virtualized timeline
-- Collapsible spans and timing bars
-
----
-
 ## 🪪 License
 
 MIT © AccordKit Contributors
@@ -160,4 +150,3 @@ MIT © AccordKit Contributors
 ## 🤝 Contributing
 
 Issues and PRs welcome!  
-Please follow the [AccordKit Contribution Guide](https://github.com/accordkit/tracer/blob/main/CONTRIBUTING.md).
