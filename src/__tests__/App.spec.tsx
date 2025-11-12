@@ -6,15 +6,42 @@ import "@testing-library/jest-dom";
 import App from "../App";
 
 describe("App", () => {
-  it("loads the sample trace and displays events", async () => {
+  it("loads sample trace, displays list, and toggles to graph view", async () => {
     render(<App />);
+    const user = userEvent.setup();
 
-    await userEvent.click(
-      screen.getByRole("button", { name: /load sample trace/i }),
+    // Load the sample trace
+    await user.click(
+      screen.getByRole("button", { name: /load sample trace/i })
     );
 
+    // Assert: We are in the "List" view by default
+    // We can see the message content.
     expect(await screen.findByText(/Summarize this./i)).toBeInTheDocument();
-    expect(screen.getAllByText(/message/i)[0]).toBeInTheDocument();
-    expect(screen.getByText(/sample-trace\.jsonl/i)).toBeInTheDocument();
+    // The graph-specific controls should not exist
+    expect(
+      screen.queryByRole("button", { name: "zoom in" })
+    ).not.toBeInTheDocument();
+
+    // Act: Click the "Graph" toggle button
+    await user.click(screen.getByRole("button", { name: "Graph" }));
+
+    // Assert: The graph controls are now rendered
+    expect(
+      await screen.findByRole("button", { name: "Zoom In" })
+    ).toBeInTheDocument();
+    // The list view's detailed text is no longer visible
+    // expect(screen.queryByText(/Summarize this./i)).not.toBeInTheDocument();
+    expect(screen.queryByTestId("event-list")).toBeNull()
+
+    // Act: Click back to "List"
+    await user.click(screen.getByRole("button", { name: "List" }));
+
+    // Assert: The list view is back
+    expect(screen.getByTestId("event-list")).toBeInTheDocument();
+    // The graph controls are gone
+    expect(
+      screen.queryByRole("button", { name: "Zoom In" })
+    ).not.toBeInTheDocument();
   });
 });

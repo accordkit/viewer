@@ -1,12 +1,17 @@
+import { useState } from "react";
+
 import { AdvancedFilterBar } from "./components/AdvancedFilterBar";
 import { EventsPanel } from "./components/EventsPanel";
 import { EventSummary } from "./components/EventSummary";
 import { FollowEventsPill } from "./components/FollowEventsPill";
 import { LiveControls } from "./components/LiveControls";
+import { OrchestratorGraph } from "./components/OrchestratorGraph";
 import { TraceIngestPanel } from "./components/TraceIngestPanel";
 import { useLiveStreaming } from "./hooks/useLiveStreaming";
 import { useTraceData } from "./hooks/useTraceData";
 import { RightPanelSlot } from "./plugins";
+
+type ViewMode = "list" | "graph";
 
 export default function App() {
   const {
@@ -33,6 +38,8 @@ export default function App() {
     pendingCount,
   } = useLiveStreaming({ appendEvents });
 
+  const [view, setView] = useState<ViewMode>("list");
+
   return (
     <div className="app-shell">
       <main>
@@ -58,9 +65,37 @@ export default function App() {
           onFiles={handleFiles}
         />
 
-        <EventsPanel events={filteredEvents} bottomRef={bottomRef} />
+        {/* --- VIEW TOGGLER --- */}
+        <div
+          className="filter-bar"
+          style={{ marginBottom: "0.75rem", gap: "0.25rem" }}
+        >
+          <button
+            type="button"
+            className={`filter-button ${view === "list" ? "active" : ""}`}
+            onClick={() => setView("list")}
+          >
+            List
+          </button>
+          <button
+            type="button"
+            className={`filter-button ${view === "graph" ? "active" : ""}`}
+            onClick={() => setView("graph")}
+          >
+            Graph
+          </button>
+        </div>
 
-        <FollowEventsPill visible={live && !followTail} onFollow={followLatest} />
+        {view === "list" ? (
+          <EventsPanel events={filteredEvents} bottomRef={bottomRef} />
+        ) : (
+          <OrchestratorGraph events={filteredEvents} />
+        )}
+
+        <FollowEventsPill
+          visible={live && !followTail}
+          onFollow={followLatest}
+        />
       </main>
 
       <aside>

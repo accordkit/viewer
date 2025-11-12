@@ -1,16 +1,17 @@
+import { TracerEvent } from "@accordkit/tracer";
 import { describe, it, expect } from "vitest";
 
+import { AppTracerEvent } from "../types/events";
 import {
   DEFAULT_FILTERS,
   buildFilterPredicate,
   extractFacets,
   type FilterState,
 } from "../utils/eventFilters";
+import { normalizeEvent } from "../utils/normalizeEvent";
 
-import type { TracerEvent } from "@accordkit/tracer";
-
-function ev(partial: Partial<TracerEvent>): TracerEvent {
-  return {
+function ev(partial: Partial<TracerEvent>): AppTracerEvent {
+  const raw = {
     ts: partial.ts ?? "2024-01-01T00:00:00.000Z",
     sessionId: partial.sessionId ?? "s1",
     level: partial.level ?? "info",
@@ -20,9 +21,11 @@ function ev(partial: Partial<TracerEvent>): TracerEvent {
     model: partial.model,
     ...partial,
   } as TracerEvent;
+
+  return normalizeEvent(raw);
 }
 
-const events: TracerEvent[] = [
+const events: AppTracerEvent[] = [
   ev({
     type: "message",
     provider: "openai",
@@ -57,7 +60,7 @@ describe("extractFacets", () => {
   it("collects distinct types/providers/models/levels", () => {
     const f = extractFacets(events);
     expect(f.types.sort()).toEqual(
-      ["message", "span", "tool_call", "tool_result"].sort(),
+      ["message", "span", "tool_call", "tool_result"].sort()
     );
     expect(f.providers.sort()).toEqual(["openai", "anthropic"].sort());
   });

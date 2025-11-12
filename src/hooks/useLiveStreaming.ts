@@ -6,12 +6,12 @@ import {
   type RefObject,
 } from "react";
 
+import { type AppTracerEvent } from "../types/events"; 
 import { LiveClient } from "../utils/liveClient";
-
-import type { TracerEvent } from "@accordkit/tracer";
+import { normalizeEvent } from "../utils/normalizeEvent";
 
 interface UseLiveStreamingParams {
-  appendEvents: (events: TracerEvent[]) => void;
+  appendEvents: (events: AppTracerEvent[]) => void;
 }
 
 export interface LiveStreamingState {
@@ -41,7 +41,7 @@ export function useLiveStreaming({
   const autoScrollingRef = useRef(false);
   const autoScrollTimeoutRef = useRef<number | null>(null);
 
-  const pendingRef = useRef<TracerEvent[]>([]);
+  const pendingRef = useRef<AppTracerEvent[]>([]);
   const clientRef = useRef<LiveClient>(undefined);
 
   const clearAutoScrollTimeout = useCallback(() => {
@@ -77,7 +77,7 @@ export function useLiveStreaming({
   }, [scrollToBottom]);
 
   const appendAndFollow = useCallback(
-    (incoming: TracerEvent[]) => {
+    (incoming: AppTracerEvent[]) => {
       appendEvents(incoming);
       if (followTailRef.current) {
         scrollToBottom();
@@ -109,12 +109,14 @@ export function useLiveStreaming({
       url: "http://localhost:1967/api/events",
       onEvent: (evt) => {
         setReceived((n) => n + 1);
+        const cleanEvt = normalizeEvent(evt);
+
         if (paused) {
-          pendingRef.current.push(evt);
+          pendingRef.current.push(cleanEvt);
           setPendingCount(pendingRef.current.length);
           return;
         }
-        appendAndFollow([evt]);
+        appendAndFollow([cleanEvt]);
       },
     });
 

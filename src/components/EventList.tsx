@@ -7,10 +7,10 @@ import {
   type SpanNode,
 } from "../utils/buildSpanTree";
 
-import type { TracerEvent } from "@accordkit/tracer";
+import type { AppTracerEvent } from "../types/events";
 
 interface EventListProps {
-  events: TracerEvent[];
+  events: AppTracerEvent[];
 }
 
 const PROVIDER_COLORS: Record<string, string> = {
@@ -37,12 +37,12 @@ export function EventList({ events }: EventListProps) {
   }
 
   return (
-    <div className="event-list">
-      {/* Top-level non-span events */}
+    <div className="event-list" data-testid="event-list">
+      {/* Top-level non-span events (orphans) */}
       {orphans.map((e, i) => (
-        <EventRow key={`orphan-${e.ts}-${i}`} event={e} />
+        <EventRow key={`orphan-${e.ts}-${i}`} event={e} depth={0} />
       ))}
-      {/* Span tree */}
+      {/* Span tree roots */}
       {roots.map((node) => (
         <SpanNodeView key={node.id} node={node} depth={0} />
       ))}
@@ -50,27 +50,44 @@ export function EventList({ events }: EventListProps) {
   );
 }
 
+/**
+ * Recursive component to render a span and its children.
+ * This component itself renders *nothing*, it just maps nodes to EventRows.
+ */
 function SpanNodeView({ node, depth }: { node: SpanNode; depth: number }) {
   return (
-    <div style={{ marginLeft: depth * 16 }}>
-      <EventRow event={node.event} />
-      {/* events attached to this span */}
+    <>
+      {/* Render the span row itself at the current depth */}
+      <EventRow event={node.event} depth={depth} />
+
+      {/* Render attached events, indented one level deeper */}
       {node.events.map((e, i) => (
-        <div key={`evt-${node.id}-${i}`} style={{ marginLeft: 16 }}>
-          <EventRow event={e} />
-        </div>
+        <EventRow key={`evt-${node.id}-${i}`} event={e} depth={depth + 1} />
       ))}
-      {/* child spans */}
+
+      {/* Render children, indented one level deeper */}
       {node.children.map((child) => (
         <SpanNodeView key={child.id} node={child} depth={depth + 1} />
       ))}
-    </div>
+    </>
   );
 }
 
-function EventRow({ event }: { event: TracerEvent }) {
+/**
+ * Renders a single event row, with indentation.
+ */
+function EventRow({ event, depth }: { event: AppTracerEvent; depth: number }) {
+  const indentStyle: CSSProperties = {
+    // Apply the margin to the row itself
+    marginLeft: depth * 24, // 24px per level
+    // Border to visualize the hierarchy
+    borderLeft: depth > 0 ? "2px solid rgba(148, 163, 184, 0.1)" : "none",
+    paddingLeft: depth > 0 ? "1.1rem" : "1.2rem",
+  };
+
   return (
-    <div className="event-row">
+    <div className="event-row" style={indentStyle}>
+      {/* Metadata Column */}
       <div>
         <div className="badge" data-type={event.type}>
           {event.type}
@@ -80,30 +97,33 @@ function EventRow({ event }: { event: TracerEvent }) {
             marginTop: "0.45rem",
             fontSize: "0.78rem",
             color: "rgba(148,163,184,0.85)",
-          }}
-        >
-          <strong>{event.provider ?? "unknown"}</strong>
-          <div>{formatTimestamp(event.ts)}</div>
-        </div>
-        <div
-          style={{
-            fontSize: "0.78rem",
-            color: "rgba(148,163,184,0.85)",
             display: "flex",
             flexDirection: "column",
             gap: "0.35rem",
-            alignItems: "center",
-            textAlign: "center",
+            alignItems: "flex-start", // Left-align metadata
             minWidth: 0,
           }}
         >
           {/* provider/model badge */}
           {event.provider ? (
             <ProviderBadge provider={event.provider} model={event.model} />
-          ) : null}
+          ) : (
+            <span
+              style={{
+                fontSize: "0.78rem",
+                color: "rgba(148,163,184,0.85)",
+              }}
+            >
+              unknown
+            </span>
+          )}
+          {/* Timestamp */}
           <div>{formatTimestamp(event.ts)}</div>
         </div>
       </div>
+      {/* End Metadata Column --- */}
+
+      {/* Body Column */}
       <div style={{ minWidth: 0 }}>
         <h3
           style={{
@@ -112,7 +132,10 @@ function EventRow({ event }: { event: TracerEvent }) {
             color: "#f8fafc",
           }}
         >
-          {event.model ?? event.ctx.spanId}
+          {/* Show operation for spans, model for others, fallback to spanId */}
+          {event.type === "span"
+            ? event.operation
+            : (event.model ?? event.ctx.spanId)}
         </h3>
         <EventBody event={event} />
 
@@ -121,11 +144,12 @@ function EventRow({ event }: { event: TracerEvent }) {
           <EventExtrasSlot event={event} />
         </div>
       </div>
+      {/* End Body Column */}
     </div>
   );
 }
 
-function EventBody({ event }: { event: TracerEvent }) {
+function EventBody({ event }: { event: AppTracerEvent }) {
   switch (event.type) {
     case "message":
       return (
@@ -169,8 +193,8 @@ function EventBody({ event }: { event: TracerEvent }) {
               color: "#fcd34d",
             }}
           >
-            {event.ok ? "Result" : "Error"} from <strong>{event.tool}</strong> (
-            {event.latencyMs} ms)
+            {event.ok ? "Result" : "Error"} from <strong>{event.tool}</strong>
+            {event.latencyMs != null ? ` (${event.latencyMs} ms)` : ""}
           </div>
           <CodeBlock value={event.output} />
         </div>
@@ -196,13 +220,14 @@ function EventBody({ event }: { event: TracerEvent }) {
       return (
         <div>
           <div style={{ fontSize: "0.9rem", color: "#f9a8d4" }}>
-            {event.operation} · {event.durationMs} ms · {event.status}
+            {event.durationMs} ms · {event.status}
           </div>
           {event.attrs && <CodeBlock value={event.attrs} collapsed />}
         </div>
       );
     default:
-      return <pre style={{ margin: 0 }}>{JSON.stringify(event, null, 2)}</pre>;
+      // This default case handles any event types we haven't explicitly formatted
+      return <CodeBlock value={event} collapsed />;
   }
 }
 
@@ -269,7 +294,14 @@ function formatTimestamp(ts?: string) {
   if (!ts) return "Unknown time";
   const date = new Date(ts);
   if (Number.isNaN(date.getTime())) return ts;
-  return date.toLocaleString();
+  // Format as HH:MM:SS.mmm
+  return date.toLocaleTimeString("en-US", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    fractionalSecondDigits: 3,
+  });
 }
 
 const messageStyle: CSSProperties = {

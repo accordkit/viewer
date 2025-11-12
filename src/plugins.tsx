@@ -1,12 +1,13 @@
 import { createContext, useContext } from "react";
 
-import type { TracerEvent } from "@accordkit/tracer";
+import { AppTracerEvent } from "./types/events";
+
 import type { ReactNode } from "react";
 
 interface PluginSlots {
   TopBanner?: () => ReactNode;
-  RightPanel?: (props: { events: TracerEvent[] }) => ReactNode;
-  EventExtras?: (props: { event: TracerEvent }) => ReactNode;
+  RightPanel?: (props: { events: AppTracerEvent[] }) => ReactNode;
+  EventExtras?: (props: { event: AppTracerEvent }) => ReactNode;
 }
 
 const PluginContext = createContext<PluginSlots | null>(null);
@@ -60,7 +61,7 @@ export function TopBannerSlot() {
   );
 }
 
-export function RightPanelSlot({ events }: { events: TracerEvent[] }) {
+export function RightPanelSlot({ events }: { events: AppTracerEvent[] }) {
   const value = useContext(PluginContext);
   if (value?.RightPanel) {
     return <>{value.RightPanel({ events })}</>;
@@ -90,15 +91,14 @@ export function RightPanelSlot({ events }: { events: TracerEvent[] }) {
             color: "rgba(148,163,184,0.8)",
           }}
         >
-          Override via plugin slots to inject custom analytics or TraceTalk
-          panels.
+          Override via plugin slots to inject custom analytics.
         </p>
       </div>
     </div>
   );
 }
 
-export function EventExtrasSlot({ event }: { event: TracerEvent }) {
+export function EventExtrasSlot({ event }: { event: AppTracerEvent }) {
   const value = useContext(PluginContext);
   if (value?.EventExtras) return <>{value.EventExtras({ event })}</>;
   return null;

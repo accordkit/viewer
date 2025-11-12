@@ -1,13 +1,14 @@
+import { TracerEvent } from "@accordkit/tracer";
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 
 import { EventList } from "../components/EventList";
 import { PluginProvider } from "../plugins";
+import { AppTracerEvent } from "../types/events";
+import { normalizeEvent } from "../utils/normalizeEvent";
 
-import type { TracerEvent } from "@accordkit/tracer";
-
-function ev(partial: Partial<TracerEvent>): TracerEvent {
-  return {
+function ev(partial: Partial<TracerEvent>): AppTracerEvent {
+  const raw = {
     ts: partial.ts ?? "2024-01-01T00:00:00.000Z",
     sessionId: partial.sessionId ?? "s1",
     level: partial.level ?? "info",
@@ -17,11 +18,13 @@ function ev(partial: Partial<TracerEvent>): TracerEvent {
     model: partial.model,
     ...partial,
   } as TracerEvent;
+
+  return normalizeEvent(raw);
 }
 
 describe("PluginProvider + EventExtrasSlot", () => {
   it("renders EventExtras content under each event", () => {
-    const events: TracerEvent[] = [
+    const events: AppTracerEvent[] = [
       ev({
         type: "message",
         role: "user",
@@ -35,14 +38,14 @@ describe("PluginProvider + EventExtrasSlot", () => {
       }),
     ];
 
-    const Extras = ({ event }: { event: TracerEvent }) => (
+    const Extras = ({ event }: { event: AppTracerEvent }) => (
       <div data-testid={`extras-${event.type}`}>extras: {event.type}</div>
     );
 
     render(
       <PluginProvider slots={{ EventExtras: Extras }}>
         <EventList events={events} />
-      </PluginProvider>,
+      </PluginProvider>
     );
 
     expect(screen.getByTestId("extras-message")).toBeInTheDocument();

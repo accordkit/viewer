@@ -1,6 +1,6 @@
-import type { TracerEvent } from "@accordkit/tracer";
+import type { AppTracerEvent } from "../types/events";
 
-export const SAMPLE_TRACE: TracerEvent[] = [
+export const SAMPLE_TRACE: AppTracerEvent[] = [
   // root span
   {
     type: "span",

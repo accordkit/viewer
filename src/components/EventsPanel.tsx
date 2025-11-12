@@ -1,10 +1,10 @@
 import { EventList } from "./EventList";
 
-import type { TracerEvent } from "@accordkit/tracer";
+import type { AppTracerEvent } from "../types/events";
 import type { RefObject } from "react";
 
 interface EventsPanelProps {
-  events: TracerEvent[];
+  events: AppTracerEvent[];
   bottomRef: RefObject<HTMLDivElement | null>;
 }
 
