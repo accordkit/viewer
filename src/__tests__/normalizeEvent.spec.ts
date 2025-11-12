@@ -33,6 +33,7 @@ function createRawSpan(status: string | undefined | null): TracerEvent {
     type: "span",
     operation: "test-op",
     durationMs: 100,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     status: status as any, // Simulating bad data
   });
 }
