@@ -1,8 +1,7 @@
+import type { AppTracerEvent } from "../types/events";
 import type { FilterState } from "../utils/eventFilters";
-import type { TracerEvent } from "@accordkit/tracer";
-
 interface Facets {
-  types: TracerEvent["type"][];
+  types: AppTracerEvent["type"][];
   providers: string[];
   models: string[];
   levels: Array<"debug" | "info" | "warn" | "error">;

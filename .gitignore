@@ -3,6 +3,9 @@ dist/
 coverage/
 node_modules/
 
+# TypeScript build cache
+*.tsbuildinfo
+
 # pnpm files
 .pnpm-store/
 .pnpm-debug.log
@@ -15,5 +18,8 @@ node_modules/
 .accordkit/
 logs/
 *.log
+
+# Vite auto-generated declaration file
+vite.config.d.ts
 
 docs/

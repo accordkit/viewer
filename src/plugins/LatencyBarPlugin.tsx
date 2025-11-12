@@ -1,9 +1,10 @@
-import type { ToolResultEvent, TracerEvent } from "@accordkit/tracer";
+import type { AppTracerEvent } from "../types/events";
+import type { ToolResultEvent } from "@accordkit/tracer";
 
 const SLOW_MS = 1000;
 const MAX_BAR_MS = 3000;
 
-export function LatencyBarPlugin({ event }: { event: TracerEvent }) {
+export function LatencyBarPlugin({ event }: { event: AppTracerEvent }) {
   const dur = getDuration(event);
   const usage = getUsage(event);
 
@@ -26,7 +27,7 @@ export function LatencyBarPlugin({ event }: { event: TracerEvent }) {
   );
 }
 
-function getDuration(event: TracerEvent): number | undefined {
+function getDuration(event: AppTracerEvent): number | undefined {
   if (event.type === "span") return event.durationMs;
   if (
     "latencyMs" in event &&
@@ -43,7 +44,7 @@ interface UsageData {
   costUSD?: number;
 }
 
-function getUsage(event: TracerEvent): UsageData {
+function getUsage(event: AppTracerEvent): UsageData {
   const usage = (event as Partial<{ usage: UsageData }>).usage ?? {};
   return {
     totalTokens: usage.totalTokens,

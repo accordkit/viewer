@@ -1,11 +1,13 @@
+import { TracerEvent } from "@accordkit/tracer";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useLiveStreaming } from "../hooks/useLiveStreaming";
+import { AppTracerEvent } from "../types/events";
+import { normalizeEvent } from "../utils/normalizeEvent";
 
 import type { LiveClientOptions } from "../utils/liveClient";
-import type { TracerEvent } from "@accordkit/tracer";
 
 const liveClients: Array<{
   opts: LiveClientOptions;
@@ -34,7 +36,7 @@ vi.mock("../utils/liveClient", () => {
 function ResettableHarness({
   appendEvents,
 }: {
-  appendEvents: (events: TracerEvent[]) => void;
+  appendEvents: (events: AppTracerEvent[]) => void;
 }) {
   const state = useLiveStreaming({ appendEvents });
 
@@ -89,7 +91,7 @@ describe("useLiveStreaming", () => {
       liveClients.at(-1)!.opts.onEvent(mockEvent);
     });
 
-    expect(appendEvents).toHaveBeenCalledWith([mockEvent]);
+    expect(appendEvents).toHaveBeenCalledWith([normalizeEvent(mockEvent)]);
   });
 
   it("stops following when the user manually scrolls and can re-follow", async () => {

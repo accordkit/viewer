@@ -1,4 +1,3 @@
-// src/setupTests.ts
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
@@ -25,7 +24,7 @@ class MockIntersectionObserver implements IntersectionObserver {
           time: Date.now(),
         } as IntersectionObserverEntry,
       ],
-      this,
+      this
     );
   }
 
@@ -44,11 +43,39 @@ class MockIntersectionObserver implements IntersectionObserver {
 
 vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
+class MockResizeObserver implements ResizeObserver {
+  private callback: ResizeObserverCallback;
+
+  constructor(callback: ResizeObserverCallback) {
+    this.callback = callback;
+  }
+
+  observe(target: Element) {
+    this.callback(
+      [
+        { target, contentRect: target.getBoundingClientRect() },
+      ] as ResizeObserverEntry[],
+      this
+    );
+  }
+
+  unobserve() {
+    /* noop */
+  }
+
+  disconnect() {
+    /* noop */
+  }
+}
+
+vi.stubGlobal("ResizeObserver", MockResizeObserver);
+
 const globalWindow = globalThis as Window &
   typeof globalThis & {
     requestAnimationFrame?: typeof window.requestAnimationFrame;
     cancelAnimationFrame?: typeof window.cancelAnimationFrame;
     scrollTo?: typeof window.scrollTo;
+    DOMMatrixReadOnly?: typeof window.DOMMatrixReadOnly;
   };
 
 if (typeof globalWindow.requestAnimationFrame !== "function") {
@@ -70,4 +97,26 @@ if (typeof globalWindow.scrollTo !== "function") {
 
 if (typeof Element.prototype.scrollIntoView !== "function") {
   Element.prototype.scrollIntoView = vi.fn();
+}
+
+if (typeof globalWindow.DOMMatrixReadOnly !== "function") {
+  const parseScaleY = (transform?: string) => {
+    if (!transform || transform === "none") {
+      return 1;
+    }
+    const match = transform.match(/matrix\(([^)]+)\)/);
+    if (!match) {
+      return 1;
+    }
+    const parts = match[1].split(",").map((p) => Number.parseFloat(p.trim()));
+    return Number.isFinite(parts[3]) ? parts[3]! : 1;
+  };
+  class MockDOMMatrixReadOnly {
+    m22: number;
+    constructor(transform?: string) {
+      this.m22 = parseScaleY(transform);
+    }
+  }
+  globalWindow.DOMMatrixReadOnly =
+    MockDOMMatrixReadOnly as unknown as typeof DOMMatrixReadOnly;
 }

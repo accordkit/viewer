@@ -1,6 +1,6 @@
-import type { TracerEvent } from "@accordkit/tracer";
+import type { AppTracerEvent } from "../types/events";
 
-export type EventType = TracerEvent["type"];
+export type EventType = AppTracerEvent["type"];
 
 export interface FilterState {
   types: Set<EventType> | "all";
@@ -18,7 +18,7 @@ export const DEFAULT_FILTERS: FilterState = {
   q: "",
 };
 
-export function extractFacets(events: TracerEvent[]) {
+export function extractFacets(events: AppTracerEvent[]) {
   const types = new Set<EventType>();
   const providers = new Set<string>();
   const models = new Set<string>();
@@ -46,7 +46,7 @@ export function buildFilterPredicate(f: FilterState) {
   const modelAll = f.models === "all" ? null : new Set(f.models);
   const levelAll = f.levels === "all" ? null : new Set(f.levels);
 
-  return (e: TracerEvent): boolean => {
+  return (e: AppTracerEvent): boolean => {
     if (typeAll && !typeAll.has(e.type)) return false;
     if (levelAll && !levelAll.has(e.level)) return false;
     if (provAll && (!e.provider || !provAll.has(e.provider))) return false;

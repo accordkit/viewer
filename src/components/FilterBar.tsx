@@ -1,6 +1,6 @@
-import type { TracerEvent } from "@accordkit/tracer";
+import type { AppTracerEvent } from "../types/events";
 
-const EVENT_TYPES: Array<TracerEvent["type"]> = [
+const EVENT_TYPES: Array<AppTracerEvent["type"]> = [
   "message",
   "tool_call",
   "tool_result",
@@ -9,8 +9,8 @@ const EVENT_TYPES: Array<TracerEvent["type"]> = [
 ];
 
 interface FilterBarProps {
-  activeType: "all" | TracerEvent["type"];
-  onChange: (type: "all" | TracerEvent["type"]) => void;
+  activeType: "all" | AppTracerEvent["type"];
+  onChange: (type: "all" | AppTracerEvent["type"]) => void;
 }
 
 export function FilterBar({ activeType, onChange }: FilterBarProps) {

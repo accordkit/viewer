@@ -3,6 +3,7 @@ import { render, waitFor, act } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { useTraceData } from "../hooks/useTraceData";
+import { normalizeEvent } from "../utils/normalizeEvent";
 
 function renderTraceDataHook() {
   const result: { current: ReturnType<typeof useTraceData> | null } = {
@@ -79,7 +80,7 @@ describe("useTraceData", () => {
 
     const MAX_EVENTS = 10_000;
     const incoming = Array.from({ length: MAX_EVENTS + 25 }, (_, idx) =>
-      makeEvent(idx)
+      normalizeEvent(makeEvent(idx))
     );
 
     await act(async () => {

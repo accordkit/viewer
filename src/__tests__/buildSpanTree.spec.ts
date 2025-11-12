@@ -1,12 +1,13 @@
+import { TracerEvent } from "@accordkit/tracer";
 import { describe, it, expect } from "vitest";
 
+import { AppTracerEvent } from "../types/events";
 import { buildSpanForest } from "../utils/buildSpanTree";
+import { normalizeEvent } from "../utils/normalizeEvent";
 
-import type { TracerEvent } from "@accordkit/tracer";
-
-function base(e: Partial<TracerEvent>): TracerEvent {
+function base(e: Partial<TracerEvent>): AppTracerEvent {
   // minimal valid BaseEvent fields from tracer types:
-  return {
+  const raw = {
     ts: e.ts ?? "2024-01-01T00:00:00.000Z",
     sessionId: e.sessionId ?? "s1",
     level: e.level ?? "info",
@@ -16,11 +17,13 @@ function base(e: Partial<TracerEvent>): TracerEvent {
     model: e.model,
     ...e,
   } as TracerEvent;
+
+  return normalizeEvent(raw);
 }
 
 describe("buildSpanForest", () => {
   it("nests child spans under parents and sorts by ts", () => {
-    const events: TracerEvent[] = [
+    const events: AppTracerEvent[] = [
       base({
         type: "span",
         ctx: { traceId: "t1", spanId: "root" },
@@ -56,7 +59,7 @@ describe("buildSpanForest", () => {
   });
 
   it("attaches non-span events to their parent span as events", () => {
-    const events: TracerEvent[] = [
+    const events: AppTracerEvent[] = [
       base({
         type: "span",
         ctx: { traceId: "t1", spanId: "root" },
@@ -92,7 +95,7 @@ describe("buildSpanForest", () => {
   });
 
   it("keeps top-level non-span events as orphans when no parent span", () => {
-    const events: TracerEvent[] = [
+    const events: AppTracerEvent[] = [
       base({
         type: "message",
         ctx: { traceId: "t1", spanId: "m1" },

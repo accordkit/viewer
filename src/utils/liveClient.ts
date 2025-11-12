@@ -1,4 +1,6 @@
-import type { TracerEvent } from "@accordkit/tracer";
+import { TracerEvent } from "@accordkit/tracer";
+
+import type { AppTracerEvent } from "../types/events";
 
 export type LiveTransport = "sse" | "ws";
 
