@@ -51,9 +51,22 @@ class MockResizeObserver implements ResizeObserver {
   }
 
   observe(target: Element) {
+    const rect = target.getBoundingClientRect();
+    const boxSize = [
+      {
+        blockSize: rect.height,
+        inlineSize: rect.width,
+      },
+    ];
     this.callback(
       [
-        { target, contentRect: target.getBoundingClientRect() },
+        {
+          target,
+          contentRect: rect,
+          borderBoxSize: boxSize,
+          contentBoxSize: boxSize,
+          devicePixelContentBoxSize: boxSize,
+        },
       ] as ResizeObserverEntry[],
       this
     );

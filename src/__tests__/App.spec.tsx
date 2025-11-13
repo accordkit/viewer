@@ -1,7 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
 import "@testing-library/jest-dom";
+
+const deterministicTrace = vi.hoisted(() => {
+  const { DETERMINISTIC_TRACE } = require("./fixtures/deterministicTrace.ts");
+  return DETERMINISTIC_TRACE;
+});
+
+vi.mock("../data/sampleTrace", () => ({
+  SAMPLE_TRACE: deterministicTrace,
+}));
 
 import App from "../App";
 

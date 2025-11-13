@@ -1,16 +1,28 @@
-import { useMemo, type CSSProperties } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  memo,
+  type CSSProperties,
+  type RefObject,
+} from "react";
+import {
+  List,
+  useDynamicRowHeight,
+  type RowComponentProps,
+} from "react-window";
 
 import { EventExtrasSlot } from "../plugins";
-import {
-  buildSpanTree,
-  buildSpanForest,
-  type SpanNode,
-} from "../utils/buildSpanTree";
+import { buildSpanForest, type SpanNode } from "../utils/buildSpanTree";
 
+import type { EventListHandler } from "./EventListHandle";
 import type { AppTracerEvent } from "../types/events";
 
 interface EventListProps {
   events: AppTracerEvent[];
+  bottomRef: RefObject<HTMLDivElement | null>;
+  onListApiChange?: (api: EventListHandler | null) => void;
 }
 
 const PROVIDER_COLORS: Record<string, string> = {
@@ -20,8 +32,53 @@ const PROVIDER_COLORS: Record<string, string> = {
   azure: "#0078d4",
 };
 
-export function EventList({ events }: EventListProps) {
+const ROW_GAP_PX = 12;
+const ESTIMATED_ROW_HEIGHT = 220;
+const ESTIMATED_ROW_SIZE = ESTIMATED_ROW_HEIGHT + ROW_GAP_PX;
+
+interface FlattenedRow {
+  key: string;
+  depth: number;
+  event: AppTracerEvent;
+}
+
+export function EventList({
+  events,
+  bottomRef,
+  onListApiChange,
+}: EventListProps) {
   const { roots, orphans } = useMemo(() => buildSpanForest(events), [events]);
+  const flattenedRows = useMemo<FlattenedRow[]>(
+    () => flattenEventRows({ roots, orphans }),
+    [roots, orphans]
+  );
+  const rowData = useMemo(
+    () => ({
+      rows: flattenedRows,
+      rowCount: flattenedRows.length + 1, // sentinel row
+    }),
+    [flattenedRows]
+  );
+  const [listHeight, setListHeight] = useState<number>(() =>
+    typeof window !== "undefined" ? window.innerHeight : 600
+  );
+  const dynamicRowHeight = useDynamicRowHeight({
+    defaultRowHeight: ESTIMATED_ROW_SIZE,
+    key: flattenedRows.length,
+  });
+  const listRef = useRef<EventListHandler | null>(null);
+
+  useEffect(() => {
+    onListApiChange?.(listRef.current);
+    return () => onListApiChange?.(null);
+  }, [onListApiChange]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onResize = () => setListHeight(window.innerHeight);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   if (events.length === 0) {
     return (
@@ -37,53 +94,81 @@ export function EventList({ events }: EventListProps) {
   }
 
   return (
-    <div className="event-list" data-testid="event-list">
-      {/* Top-level non-span events (orphans) */}
-      {orphans.map((e, i) => (
-        <EventRow key={`orphan-${e.ts}-${i}`} event={e} depth={0} />
-      ))}
-      {/* Span tree roots */}
-      {roots.map((node) => (
-        <SpanNodeView key={node.id} node={node} depth={0} />
-      ))}
-    </div>
+    <List
+      listRef={listRef}
+      className="event-list"
+      data-testid="event-list"
+      rowCount={rowData.rowCount}
+      rowHeight={dynamicRowHeight}
+      rowComponent={VirtualizedRow}
+      rowProps={{ ...rowData, sentinelRef: bottomRef }}
+      overscanCount={12}
+      defaultHeight={listHeight}
+      style={{ height: listHeight, width: "100%" }}
+    />
   );
 }
 
-/**
- * Recursive component to render a span and its children.
- * This component itself renders *nothing*, it just maps nodes to EventRows.
- */
-function SpanNodeView({ node, depth }: { node: SpanNode; depth: number }) {
+type VirtualizedRowProps = {
+  rows: FlattenedRow[];
+  rowCount: number;
+  sentinelRef: RefObject<HTMLDivElement | null>;
+};
+
+function VirtualizedRow({
+  ariaAttributes,
+  index,
+  style,
+  rows,
+  rowCount,
+  sentinelRef,
+}: RowComponentProps<VirtualizedRowProps>) {
+  const isSentinel = index === rowCount - 1;
+  if (isSentinel) {
+    return (
+      <div
+        {...ariaAttributes}
+        ref={sentinelRef}
+        style={{ ...style, paddingBottom: 0, height: 1 }}
+      />
+    );
+  }
+  const row = rows[index];
+  if (!row) {
+    return <div {...ariaAttributes} style={style} />;
+  }
   return (
-    <>
-      {/* Render the span row itself at the current depth */}
-      <EventRow event={node.event} depth={depth} />
-
-      {/* Render attached events, indented one level deeper */}
-      {node.events.map((e, i) => (
-        <EventRow key={`evt-${node.id}-${i}`} event={e} depth={depth + 1} />
-      ))}
-
-      {/* Render children, indented one level deeper */}
-      {node.children.map((child) => (
-        <SpanNodeView key={child.id} node={child} depth={depth + 1} />
-      ))}
-    </>
+    <div
+      {...ariaAttributes}
+      style={{
+        ...style,
+        paddingBottom: ROW_GAP_PX,
+      }}
+    >
+      <EventRow event={row.event} depth={row.depth} />
+    </div>
   );
 }
 
 /**
  * Renders a single event row, with indentation.
  */
-function EventRow({ event, depth }: { event: AppTracerEvent; depth: number }) {
-  const indentStyle: CSSProperties = {
-    // Apply the margin to the row itself
-    marginLeft: depth * 24, // 24px per level
-    // Border to visualize the hierarchy
-    borderLeft: depth > 0 ? "2px solid rgba(148, 163, 184, 0.1)" : "none",
-    paddingLeft: depth > 0 ? "1.1rem" : "1.2rem",
-  };
+interface EventRowProps {
+  event: AppTracerEvent;
+  depth: number;
+}
+
+function EventRowInner({ event, depth }: EventRowProps) {
+  const indentStyle = useMemo<CSSProperties>(
+    () => ({
+      // Apply the margin to the row itself
+      marginLeft: depth * 24, // 24px per level
+      // Border to visualize the hierarchy
+      borderLeft: depth > 0 ? "2px solid rgba(148, 163, 184, 0.1)" : "none",
+      paddingLeft: depth > 0 ? "1.1rem" : "1.2rem",
+    }),
+    [depth]
+  );
 
   return (
     <div className="event-row" style={indentStyle}>
@@ -149,7 +234,9 @@ function EventRow({ event, depth }: { event: AppTracerEvent; depth: number }) {
   );
 }
 
-function EventBody({ event }: { event: AppTracerEvent }) {
+const EventRow = memo(EventRowInner);
+
+function EventBodyInner({ event }: { event: AppTracerEvent }) {
   switch (event.type) {
     case "message":
       return (
@@ -231,6 +318,8 @@ function EventBody({ event }: { event: AppTracerEvent }) {
   }
 }
 
+const EventBody = memo(EventBodyInner);
+
 function ProviderBadge({
   provider,
   model,
@@ -277,18 +366,22 @@ function ProviderBadge({
   );
 }
 
-function CodeBlock({
+const CodeBlock = memo(function CodeBlock({
   value,
   collapsed,
 }: {
   value: unknown;
   collapsed?: boolean;
 }) {
-  if (value == null) return null;
-  const json =
-    typeof value === "string" ? value : JSON.stringify(value, null, 2);
+  // Memoize expensive stringification so repeated renders don't recompute it
+  const json = useMemo(() => {
+    if (value == null) return null;
+    return typeof value === "string" ? value : JSON.stringify(value, null, 2);
+  }, [value]);
+
+  if (json == null) return null;
   return <pre style={codeBlockStyle(collapsed)}>{json}</pre>;
-}
+});
 
 function formatTimestamp(ts?: string) {
   if (!ts) return "Unknown time";
@@ -326,3 +419,37 @@ const codeBlockStyle = (collapsed?: boolean): CSSProperties => ({
   whiteSpace: "pre-wrap",
   overflowWrap: "anywhere",
 });
+
+function flattenEventRows({
+  roots,
+  orphans,
+}: {
+  roots: SpanNode[];
+  orphans: AppTracerEvent[];
+}): FlattenedRow[] {
+  const rows: FlattenedRow[] = [];
+
+  orphans.forEach((event, index) => {
+    rows.push({
+      key: `orphan-${event.ts ?? "ts"}-${index}`,
+      depth: 0,
+      event,
+    });
+  });
+
+  const visit = (node: SpanNode, depth: number) => {
+    rows.push({ key: `span-${node.id}`, depth, event: node.event });
+    node.events.forEach((event, index) => {
+      rows.push({
+        key: `evt-${node.id}-${event.ts ?? "ts"}-${index}`,
+        depth: depth + 1,
+        event,
+      });
+    });
+    node.children.forEach((child) => visit(child, depth + 1));
+  };
+
+  roots.forEach((node) => visit(node, 0));
+
+  return rows;
+}

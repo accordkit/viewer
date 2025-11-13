@@ -76,5 +76,11 @@ export default [
       globals: { ...globals.node }
     }
   },
+  {
+    files: ["scripts/benchEventList.mjs"],
+    languageOptions: {
+      globals: { ...globals.node }
+    }
+  },
   { ignores: ["dist/", "coverage/", "node_modules/", "*.zip"] },
 ];

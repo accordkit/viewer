@@ -1,14 +1,17 @@
 import { describe, it, expect } from "vitest";
 
-import { SAMPLE_TRACE } from "../data/sampleTrace";
 import { type AppTracerEvent } from "../types/events";
 import { buildSpanForest } from "../utils/buildSpanTree";
 import { transformForestToFlow } from "../utils/graphLayout";
 import { normalizeEvent } from "../utils/normalizeEvent";
 
+import { DETERMINISTIC_TRACE } from "./fixtures/deterministicTrace";
+
 describe("transformForestToFlow", () => {
   // 1. Process our sample trace exactly as the app does
-  const normalizedEvents = SAMPLE_TRACE.map(normalizeEvent) as AppTracerEvent[];
+  const normalizedEvents = DETERMINISTIC_TRACE.map(
+    normalizeEvent
+  ) as AppTracerEvent[];
   const forest = buildSpanForest(normalizedEvents);
   const { nodes, edges } = transformForestToFlow(forest);
 

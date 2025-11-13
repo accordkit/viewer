@@ -37,6 +37,8 @@ describe("Provider/Model badge", () => {
               format: "text",
             }),
           ]}
+          bottomRef={{ current: null }}
+          onListApiChange={() => {}}
         />
       </PluginProvider>
     );

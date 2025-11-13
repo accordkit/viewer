@@ -6,9 +6,11 @@ import {
   type RefObject,
 } from "react";
 
-import { type AppTracerEvent } from "../types/events"; 
 import { LiveClient } from "../utils/liveClient";
 import { normalizeEvent } from "../utils/normalizeEvent";
+
+import type { EventListHandler } from "../components/EventListHandle";
+import type { AppTracerEvent } from "../types/events";
 
 interface UseLiveStreamingParams {
   appendEvents: (events: AppTracerEvent[]) => void;
@@ -24,6 +26,7 @@ export interface LiveStreamingState {
   followLatest: () => void;
   bottomRef: RefObject<HTMLDivElement | null>;
   pendingCount: number;
+  setListApi: (api: EventListHandler | null) => void;
 }
 
 export function useLiveStreaming({
@@ -43,6 +46,8 @@ export function useLiveStreaming({
 
   const pendingRef = useRef<AppTracerEvent[]>([]);
   const clientRef = useRef<LiveClient>(undefined);
+  const [listApi, setListApi] = useState<EventListHandler | null>(null);
+  const scrollContainer = listApi?.element ?? null;
 
   const clearAutoScrollTimeout = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -57,8 +62,23 @@ export function useLiveStreaming({
       if (typeof window === "undefined") return;
       clearAutoScrollTimeout();
       autoScrollingRef.current = true;
+
       window.requestAnimationFrame(() => {
-        bottomRef.current?.scrollIntoView({ behavior, block: "end" });
+        if (listApi?.scrollToRow) {
+          listApi.scrollToRow({
+            index: Number.MAX_SAFE_INTEGER,
+            align: "end",
+            behavior,
+          });
+        } else if (scrollContainer) {
+          scrollContainer.scrollTo({
+            top: scrollContainer.scrollHeight,
+            behavior,
+          });
+        } else {
+          bottomRef.current?.scrollIntoView({ behavior, block: "end" });
+        }
+
         const delay = behavior === "smooth" ? 400 : 50;
         autoScrollTimeoutRef.current = window.setTimeout(() => {
           autoScrollingRef.current = false;
@@ -66,7 +86,7 @@ export function useLiveStreaming({
         }, delay);
       });
     },
-    [clearAutoScrollTimeout]
+    [clearAutoScrollTimeout, listApi, scrollContainer]
   );
 
   const followLatest = useCallback(() => {
@@ -151,29 +171,37 @@ export function useLiveStreaming({
         followTailRef.current = atBottom;
         setFollowTail(atBottom);
       },
-      { root: null, rootMargin: "0px 0px -64px 0px", threshold: 0 }
+      {
+        root: scrollContainer ?? null,
+        rootMargin: "0px 0px -64px 0px",
+        threshold: 0,
+      }
     );
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, []);
+  }, [scrollContainer]);
+
+  const handleScrollEvent = useCallback(() => {
+    if (!live) return;
+    if (autoScrollingRef.current) return;
+    if (!followTailRef.current) return;
+
+    manuallyUnfollowedRef.current = true;
+    followTailRef.current = false;
+    setFollowTail(false);
+  }, [live]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return undefined;
+    const target: EventTarget | null =
+      scrollContainer ??
+      (typeof window === "undefined" ? null : window);
+    if (!target || typeof target.addEventListener !== "function") return;
 
-    const handleScroll = () => {
-      if (!live) return;
-      if (autoScrollingRef.current) return;
-      if (!followTailRef.current) return;
-
-      manuallyUnfollowedRef.current = true;
-      followTailRef.current = false;
-      setFollowTail(false);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [live]);
+    target.addEventListener("scroll", handleScrollEvent, { passive: true });
+    return () =>
+      target.removeEventListener?.("scroll", handleScrollEvent as EventListener);
+  }, [handleScrollEvent, scrollContainer]);
 
   useEffect(() => {
     return () => {
@@ -199,5 +227,6 @@ export function useLiveStreaming({
     followLatest,
     bottomRef,
     pendingCount,
+    setListApi,
   };
 }
