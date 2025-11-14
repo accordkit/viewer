@@ -36,6 +36,7 @@ export default function App() {
     followLatest,
     bottomRef,
     pendingCount,
+    setListApi,
   } = useLiveStreaming({ appendEvents });
 
   const [view, setView] = useState<ViewMode>("list");
@@ -87,7 +88,11 @@ export default function App() {
         </div>
 
         {view === "list" ? (
-          <EventsPanel events={filteredEvents} bottomRef={bottomRef} />
+          <EventsPanel
+            events={filteredEvents}
+            bottomRef={bottomRef}
+            onListApiChange={setListApi}
+          />
         ) : (
           <OrchestratorGraph events={filteredEvents} />
         )}

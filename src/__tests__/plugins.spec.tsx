@@ -44,7 +44,11 @@ describe("PluginProvider + EventExtrasSlot", () => {
 
     render(
       <PluginProvider slots={{ EventExtras: Extras }}>
-        <EventList events={events} />
+        <EventList
+          events={events}
+          bottomRef={{ current: null }}
+          onListApiChange={() => {}}
+        />
       </PluginProvider>
     );
 

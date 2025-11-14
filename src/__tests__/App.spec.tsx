@@ -1,7 +1,14 @@
+import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
 import "@testing-library/jest-dom";
+
+vi.mock("../data/sampleTrace", async () => {
+  const mod = await import("./fixtures/deterministicTrace");
+  return { SAMPLE_TRACE: mod.DETERMINISTIC_TRACE };
+});
 
 import App from "../App";
 
@@ -32,7 +39,7 @@ describe("App", () => {
     ).toBeInTheDocument();
     // The list view's detailed text is no longer visible
     // expect(screen.queryByText(/Summarize this./i)).not.toBeInTheDocument();
-    expect(screen.queryByTestId("event-list")).toBeNull()
+    expect(screen.queryByTestId("event-list")).toBeNull();
 
     // Act: Click back to "List"
     await user.click(screen.getByRole("button", { name: "List" }));
